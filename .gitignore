@@ -1,0 +1,11 @@
+/.vs/
+/bin/
+/packages/
+/TestResults/
+/TestOffendingCppLib/Debug/
+/QuarantinableAppDomainLibTests/bin/
+/QuaratinableAppDomainLib/bin/
+/TestWrapperClass/bin/
+/TestWrapperClass/obj/
+/QuaratinableAppDomainLib/obj/
+/QuarantinableAppDomainLibTests/obj/
