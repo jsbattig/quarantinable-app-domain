@@ -3,15 +3,18 @@
 using namespace System;
 
 namespace TestOffendingCppLib {
-  public ref class TesterClass
+  public ref class Holder
   {
   public:
-    static TesterClass()
-    {
+    static int callsCount = 0;
+  };
 
-    }
-
+  [Serializable]
+  public ref class TesterClass : MarshalByRefObject
+  {    
+  public:
     bool SelfTest();
     void ThrowAccessViolation();
+    int SelfTestCallsCount();
   };
 }

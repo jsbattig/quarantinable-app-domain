@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestOffendingCppLib", "Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuarantinableAppDomainLibTests", "QuarantinableAppDomainLibTests\QuarantinableAppDomainLibTests.csproj", "{F5EA86F1-1964-46AF-A5C6-8F702CAC7597}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuaratinableAppDomainLib", "QuaratinableAppDomainLib\QuaratinableAppDomainLib.csproj", "{9D442243-996B-4498-BF2E-60DC0351F8F7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuarantinableAppDomainLib", "QuaratinableAppDomainLib\QuarantinableAppDomainLib.csproj", "{9D442243-996B-4498-BF2E-60DC0351F8F7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestWrapperClass", "TestWrapperClass\TestWrapperClass.csproj", "{A53FCC0E-77D4-4E42-8256-DE924CE1B29E}"
 EndProject

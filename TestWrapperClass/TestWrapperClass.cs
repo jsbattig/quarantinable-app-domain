@@ -9,7 +9,7 @@ namespace QuarantinableAppDomainLibTests
 
         public TestWrapperClass(QuarantinableAppDomain appDomain) : base(appDomain)
         {
-            _wrapperObject = LinkedAppDomainWrapper.LinkedAssembly.CreateInstance("TestOffendingCppLib.TesterClass");
+            _wrapperObject = appDomain.CreateInstance("TestOffendingCppLib.TesterClass");
         }
 
         public bool SelfTest()
@@ -20,6 +20,11 @@ namespace QuarantinableAppDomainLibTests
         public void ThrowAccessViolation()
         {
             _wrapperObject.ThrowAccessViolation();
+        }
+
+        public int SelfTestCallsCount()
+        {
+            return _wrapperObject.SelfTestCallsCount();
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Ascentis.Framework
                 {
                     if (!appDomainWrapper.Parent.IsQuarantinableException(exception))
                         throw;
-                    appDomainWrapper.Parent.AppDomainWrapperCompromised(appDomainWrapper);
+                    appDomainWrapper.AppDomainWrapperCompromised();
                     throw new QuarantinableException(exception.Message);
                 }
                 finally

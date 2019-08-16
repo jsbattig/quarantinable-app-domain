@@ -6,15 +6,40 @@ namespace Ascentis.Framework
 {
     public class QuarantinableAppDomain
     {
-        public AppDomainWrapper CurrentAppDomainWrapper => _currentAppDomainWrapper;
+        private ReaderWriterLock _currentAppDomainLock = new ReaderWriterLock();
+        public AppDomainWrapper CurrentAppDomainWrapper
+        {
+            get
+            {
+                _currentAppDomainLock.AcquireReaderLock(-1);
+                try
+                {
+                    if (_currentAppDomainWrapper != null) 
+                        return _currentAppDomainWrapper;
+                    var lockCookie =_currentAppDomainLock.UpgradeToWriterLock(-1);
+                    try
+                    {
+                        _currentAppDomainWrapper = new AppDomainWrapper(Name, this);
+                    }
+                    finally
+                    {
+                        _currentAppDomainLock.DowngradeFromWriterLock(ref lockCookie);
+                    }
+                    return _currentAppDomainWrapper;
+                }
+                finally
+                {
+                    _currentAppDomainLock.ReleaseReaderLock();
+                }
+            }
+        }
 
-        private readonly string _name;
+        public string Name { get; }
         private volatile AppDomainWrapper _currentAppDomainWrapper;
 
         public QuarantinableAppDomain(string libName)
         {
-            _name = libName;
-            _currentAppDomainWrapper = new AppDomainWrapper(libName, this);
+            Name = libName;
         }
 
         public bool IsQuarantinableException(Exception e)
@@ -25,13 +50,36 @@ namespace Ascentis.Framework
         public void AppDomainWrapperCompromised(AppDomainWrapper appDomainWrapper)
         {
             if (appDomainWrapper != _currentAppDomainWrapper) return;
-            _currentAppDomainWrapper = new AppDomainWrapper(_name, this);
+            _currentAppDomainWrapper = null;
         }
 
         public void UnloadCurrentAppDomain()
         {
-            _currentAppDomainWrapper.Unload();
-            _currentAppDomainWrapper = null;
+            if (_currentAppDomainWrapper == null) 
+                return;
+            _currentAppDomainLock.AcquireWriterLock(-1);
+            try
+            {
+                _currentAppDomainWrapper.Unload();
+                _currentAppDomainWrapper = null;
+            }
+            finally
+            {
+                _currentAppDomainLock.ReleaseWriterLock();
+            }
+        }
+
+        public object CreateInstance(string className)
+        {
+            _currentAppDomainLock.AcquireReaderLock(-1);
+            try
+            {
+                return CurrentAppDomainWrapper.LinkedDomain.CreateInstanceAndUnwrap(Name, className);
+            }
+            finally
+            {
+                _currentAppDomainLock.ReleaseReaderLock();
+            }
         }
     }
 }

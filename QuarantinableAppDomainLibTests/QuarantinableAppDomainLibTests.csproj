@@ -57,9 +57,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\QuaratinableAppDomainLib\QuaratinableAppDomainLib.csproj">
+    <ProjectReference Include="..\QuaratinableAppDomainLib\QuarantinableAppDomainLib.csproj">
       <Project>{9d442243-996b-4498-bf2e-60dc0351f8f7}</Project>
-      <Name>QuaratinableAppDomainLib</Name>
+      <Name>QuarantinableAppDomainLib</Name>
     </ProjectReference>
     <ProjectReference Include="..\TestWrapperClass\TestWrapperClass.csproj">
       <Project>{a53fcc0e-77d4-4e42-8256-de924ce1b29e}</Project>

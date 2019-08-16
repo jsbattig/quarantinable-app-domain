@@ -145,6 +145,26 @@ namespace QuarantinableAppDomainLibTests
         }
 
         [TestMethod]
+        public void TestCreateWrapperClassAndFailCallingUnloadedAppDomain()
+        {
+            qap = new QuarantinableAppDomain("TestOffendingCppLib");
+            Assert.IsNotNull(qap);
+            Assert.IsNotNull(qap.CurrentAppDomainWrapper);
+            var obj = new TestWrapperClass(qap);
+            Assert.IsNotNull(obj);
+            Assert.IsTrue(obj.SelfTest());
+            qap.UnloadCurrentAppDomain();
+            try
+            {
+                obj.SelfTest();
+                Assert.Fail("Should have error out after unloading appDomain");
+            }
+            catch (AppDomainUnloadedException)
+            {
+            }
+        }
+
+        [TestMethod]
         public void TestCreateWrapperClassAndSelfTestTwice()
         {
             Internal_TestCreateWrapperClassAndSelfTest();
@@ -157,15 +177,28 @@ namespace QuarantinableAppDomainLibTests
             qap = new QuarantinableAppDomain("TestOffendingCppLib");
             Assert.IsNotNull(qap);
             var obj = new TestWrapperClass(qap);
+            var startInstanceCounter = AppDomainWrapper.InstanceCounter;
             Assert.IsNotNull(obj);
+            Assert.AreEqual(startInstanceCounter, AppDomainWrapper.InstanceCounter);
+            var initialSelfTestCallCounter = obj.SelfTestCallsCount();
             try
             {
+                obj.SelfTest();
+                Assert.AreEqual(initialSelfTestCallCounter + 1, obj.SelfTestCallsCount());
+                obj.SelfTest();
+                Assert.AreEqual(initialSelfTestCallCounter + 2, obj.SelfTestCallsCount());
                 obj.ThrowAccessViolation();
                 Assert.Fail("Should have thrown quarantinable Exception");
             }
             catch (QuarantinableException)
             {
             }
+            qap.UnloadCurrentAppDomain();
+            obj = new TestWrapperClass(qap);
+            Assert.IsNotNull(obj);
+            Assert.AreNotEqual(startInstanceCounter, AppDomainWrapper.InstanceCounter);
+            obj.SelfTest();
+            Assert.AreEqual(1, obj.SelfTestCallsCount());
         }
     }
 }

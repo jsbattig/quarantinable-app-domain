@@ -10,10 +10,12 @@ namespace Ascentis.Framework
 {
     public class AppDomainWrapper
     {
+        private volatile bool _compromised;
         private static volatile int _instanceCounter;
+        public static int InstanceCounter => _instanceCounter;
         private volatile int _callCounter;
         public QuarantinableAppDomain Parent { get; }
-        private AppDomain LinkedDomain { get; }
+        public AppDomain LinkedDomain { get; }
         public Assembly LinkedAssembly { get; }
 
         public void TraceableMethodEnter()
@@ -23,7 +25,8 @@ namespace Ascentis.Framework
 
         public void TraceableMethodLeave()
         {
-            Interlocked.Decrement(ref _callCounter);
+            if(Interlocked.Decrement(ref _callCounter) == 0 && _compromised)
+                Unload();
         }
         
         public AppDomainWrapper(string name, QuarantinableAppDomain parent)
@@ -40,7 +43,18 @@ namespace Ascentis.Framework
 
         public void Unload()
         {
+            LinkedDomain.DomainUnload += ad_DomainUnload;
             AppDomain.Unload(LinkedDomain);
+        }
+
+        static void ad_DomainUnload(object sender, EventArgs e)
+        {
+        }
+
+        public void AppDomainWrapperCompromised()
+        {
+            _compromised = true;
+            Parent.AppDomainWrapperCompromised(this);
         }
     }
 }
