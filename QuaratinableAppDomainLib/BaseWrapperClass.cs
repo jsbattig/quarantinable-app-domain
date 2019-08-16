@@ -1,18 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using NConcern;
+﻿using NConcern;
 
 namespace Ascentis.Framework
 {
     public class BaseWrapperClass
     {
-        public QuarantinableAppDomain LinkedAppDomain { get; }
+        public AppDomainWrapper LinkedAppDomainWrapper { get; }
 
-        public BaseWrapperClass(QuarantinableAppDomain linkedAppDomain)
+        static BaseWrapperClass()
         {
-            LinkedAppDomain = linkedAppDomain;
             Aspect.Weave<QuarantinableWrapperAttribute>(typeof(QuarantinableWrapperAttribute));
+        }
+
+        public BaseWrapperClass(QuarantinableAppDomain linkedQuarantinableAppDomainAppDomain)
+        {
+            LinkedAppDomainWrapper = linkedQuarantinableAppDomainAppDomain.CurrentAppDomainWrapper;
         }
     }
 }

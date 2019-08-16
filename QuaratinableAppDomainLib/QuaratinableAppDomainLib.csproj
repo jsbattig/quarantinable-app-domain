@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppDomainWrapper.cs" />
     <Compile Include="BaseWrapperClass.cs" />
     <Compile Include="QuarantinableException.cs" />
     <Compile Include="QuarantinableAppDomain.cs" />

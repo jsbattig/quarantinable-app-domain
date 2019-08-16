@@ -6,37 +6,15 @@ namespace Ascentis.Framework
 {
     public class QuarantinableAppDomain
     {
-        private bool _quarantined;
-        private volatile int _counter;
-        private AppDomain _appDomain;
-        private Assembly _assembly;
+        public AppDomainWrapper CurrentAppDomainWrapper => _currentAppDomainWrapper;
+
         private readonly string _name;
-
-        private void BuildNewAppDomain()
-        {
-            var appDomainSetup = new AppDomainSetup()
-            {
-                ApplicationBase = AppDomain.CurrentDomain.BaseDirectory,
-                LoaderOptimization = LoaderOptimization.MultiDomainHost
-            };
-            _appDomain = AppDomain.CreateDomain(_name + _counter, AppDomain.CurrentDomain.Evidence, appDomainSetup);
-            _assembly = _appDomain.Load(_name);
-        }
-
-        public void TraceableMethodEnter()
-        {
-            Interlocked.Increment(ref _counter);
-        }
-
-        public void TraceableMethodLeave()
-        {
-            Interlocked.Decrement(ref _counter);
-        }
+        private volatile AppDomainWrapper _currentAppDomainWrapper;
 
         public QuarantinableAppDomain(string libName)
         {
             _name = libName;
-            BuildNewAppDomain();
+            _currentAppDomainWrapper = new AppDomainWrapper(libName, this);
         }
 
         public bool IsQuarantinableException(Exception e)
@@ -44,9 +22,16 @@ namespace Ascentis.Framework
             return e is AccessViolationException;
         }
 
-        public object CreateInstance(string className)
+        public void AppDomainWrapperCompromised(AppDomainWrapper appDomainWrapper)
         {
-            return _assembly.CreateInstance(className);
+            if (appDomainWrapper != _currentAppDomainWrapper) return;
+            _currentAppDomainWrapper = new AppDomainWrapper(_name, this);
+        }
+
+        public void UnloadCurrentAppDomain()
+        {
+            _currentAppDomainWrapper.Unload();
+            _currentAppDomainWrapper = null;
         }
     }
 }

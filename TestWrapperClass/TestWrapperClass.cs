@@ -6,9 +6,10 @@ namespace QuarantinableAppDomainLibTests
     public class TestWrapperClass : BaseWrapperClass
     {
         private dynamic _wrapperObject;
+
         public TestWrapperClass(QuarantinableAppDomain appDomain) : base(appDomain)
         {
-            _wrapperObject = appDomain.CreateInstance("TestOffendingCppLib.TesterClass");
+            _wrapperObject = LinkedAppDomainWrapper.LinkedAssembly.CreateInstance("TestOffendingCppLib.TesterClass");
         }
 
         public bool SelfTest()

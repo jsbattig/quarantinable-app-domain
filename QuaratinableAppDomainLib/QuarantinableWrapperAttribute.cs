@@ -11,7 +11,10 @@ namespace Ascentis.Framework
         {
             yield return Advice.Basic.Around(new Func<object, object[], Func<object>, object>((_Instance, _Arguments, _Body) =>
             {
-                (_Instance as BaseWrapperClass).LinkedAppDomain.TraceableMethodEnter();
+                var appDomainWrapper = (_Instance as BaseWrapperClass).LinkedAppDomainWrapper;
+                if (appDomainWrapper == null)
+                    return _Body();
+                appDomainWrapper.TraceableMethodEnter();
                 try
                 {
                     var _return = _Body();
@@ -19,13 +22,14 @@ namespace Ascentis.Framework
                 }
                 catch (Exception exception)
                 {
-                    if ((_Instance as BaseWrapperClass).LinkedAppDomain.IsQuarantinableException(exception))
-                        throw new QuarantinableException(exception.Message);
-                    throw;
+                    if (!appDomainWrapper.Parent.IsQuarantinableException(exception))
+                        throw;
+                    appDomainWrapper.Parent.AppDomainWrapperCompromised(appDomainWrapper);
+                    throw new QuarantinableException(exception.Message);
                 }
                 finally
                 {
-                    (_Instance as BaseWrapperClass).LinkedAppDomain.TraceableMethodLeave();
+                    appDomainWrapper.TraceableMethodLeave();
                 }
             }));
         }

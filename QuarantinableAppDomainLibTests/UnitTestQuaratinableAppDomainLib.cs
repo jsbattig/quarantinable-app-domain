@@ -10,6 +10,7 @@ namespace QuarantinableAppDomainLibTests
     {
         private static readonly string WindowsFolder = Environment.ExpandEnvironmentVariables("%windir%");
         private AppDomain _appDomain;
+        private QuarantinableAppDomain qap;
 
         private void CreateAppDomain()
         {
@@ -28,6 +29,12 @@ namespace QuarantinableAppDomainLibTests
             {
                 AppDomain.Unload(_appDomain);
                 _appDomain = null;
+            }
+
+            if (qap != null)
+            {
+                qap.UnloadCurrentAppDomain();
+                qap = null;
             }
         }
 
@@ -105,14 +112,14 @@ namespace QuarantinableAppDomainLibTests
         {
             var qap = new QuarantinableAppDomain("TestOffendingCppLib");
             Assert.IsNotNull(qap);
-            dynamic obj = qap.CreateInstance("TestOffendingCppLib.TesterClass");
+            dynamic obj = qap.CurrentAppDomainWrapper.LinkedAssembly.CreateInstance("TestOffendingCppLib.TesterClass");
             Assert.IsNotNull(obj);
         }
 
         [TestMethod]
         public void TestCreateWrapperClass()
         {
-            var qap = new QuarantinableAppDomain("TestOffendingCppLib");
+            qap = new QuarantinableAppDomain("TestOffendingCppLib");
             Assert.IsNotNull(qap);
             var obj = new TestWrapperClass(qap);
             Assert.IsNotNull(obj);
@@ -121,11 +128,44 @@ namespace QuarantinableAppDomainLibTests
         [TestMethod]
         public void TestCreateWrapperClassAndSelfTest()
         {
-            var qap = new QuarantinableAppDomain("TestOffendingCppLib");
+            Internal_TestCreateWrapperClassAndSelfTest();
+        }
+
+        private void Internal_TestCreateWrapperClassAndSelfTest()
+        {
+            qap = new QuarantinableAppDomain("TestOffendingCppLib");
             Assert.IsNotNull(qap);
+            Assert.IsNotNull(qap.CurrentAppDomainWrapper);
             var obj = new TestWrapperClass(qap);
             Assert.IsNotNull(obj);
             Assert.IsTrue(obj.SelfTest());
+            obj = new TestWrapperClass(qap);
+            Assert.IsNotNull(obj);
+            Assert.IsTrue(obj.SelfTest());
+        }
+
+        [TestMethod]
+        public void TestCreateWrapperClassAndSelfTestTwice()
+        {
+            Internal_TestCreateWrapperClassAndSelfTest();
+            Internal_TestCreateWrapperClassAndSelfTest();
+        }
+
+        [TestMethod]
+        public void TestCreateWrapperClassAndCallQuarantinableMethod()
+        {
+            qap = new QuarantinableAppDomain("TestOffendingCppLib");
+            Assert.IsNotNull(qap);
+            var obj = new TestWrapperClass(qap);
+            Assert.IsNotNull(obj);
+            try
+            {
+                obj.ThrowAccessViolation();
+                Assert.Fail("Should have thrown quarantinable Exception");
+            }
+            catch (QuarantinableException)
+            {
+            }
         }
     }
 }
